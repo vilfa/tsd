@@ -1,11 +1,16 @@
-﻿// server.cpp : Defines the entry point for the application.
-//
+﻿#include "server.h"
 
-#include "server.h"
-#include "spdlog/spdlog.h"
+#include "net/sock.h"
+#include "os/util.h"
 
-int main()
-{
-    spdlog::info("hello spdlog");
-	return 0;
+int main(int argc, char** argv) {
+    tsd::os::cmd_ = argv[0];
+    spdlog::info("{} is starting [{}/{}]", tsd::os::process(),
+                 tsd::os::hostname(), tsd::os::pid());
+
+    auto& sock = tsd::net::WinSock::instance();
+
+    spdlog::info("{} is exiting [{}/{}]", tsd::os::process(),
+                 tsd::os::hostname(), tsd::os::pid());
+    return 0;
 }
