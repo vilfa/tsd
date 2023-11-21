@@ -1,6 +1,7 @@
 #pragma once
 
 #include <codecvt>
+#include <random>
 #include <string>
 
 #include "defs.h"
@@ -17,7 +18,7 @@ namespace os {
 
 extern const char* cmd_;
 
-static inline std::string hostname() {
+static std::string hostname() {
 #if defined(OS_WINDOWS)
     DWORD siz = MAX_COMPUTERNAME_LENGTH + 1;
     char buf[MAX_COMPUTERNAME_LENGTH + 1];
@@ -36,9 +37,9 @@ static inline std::string hostname() {
 #endif
 }
 
-static inline std::string process() { return std::string(cmd_); }
+static std::string process() { return std::string(cmd_); }
 
-static inline pid_t pid() {
+static pid_t pid() {
 #if defined(OS_WINDOWS)
     return _getpid();
 #elif defined(OS_UNIX)
@@ -46,19 +47,19 @@ static inline pid_t pid() {
 #endif
 }
 
-static inline std::wstring s2ws(const std::string& str) {
+static std::wstring s2ws(const std::string& str) {
     using convert_t = std::codecvt_utf8<wchar_t>;
     std::wstring_convert<convert_t, wchar_t> conv;
     return conv.from_bytes(str);
 }
 
-static inline std::string ws2s(const std::wstring& wstr) {
+static std::string ws2s(const std::wstring& wstr) {
     using convert_t = std::codecvt_utf8<wchar_t>;
     std::wstring_convert<convert_t, wchar_t> conv;
     return conv.to_bytes(wstr);
 }
 
-static inline std::string error() {
+static std::string error() {
 #if defined(OS_WINDOWS)
     wchar_t buf[256];
     FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
@@ -69,6 +70,18 @@ static inline std::string error() {
 #elif defined(OS_UNIX)
     // TODO
 #endif  // OS_WINDOWS
+}
+
+template <class T = uint_fast32_t>
+static T random(T min, T max) {
+    std::random_device dev;
+    std::mt19937 rng(dev());
+
+    using dist_t = std::conditional_t<std::is_integral_v<T>,
+                                      std::uniform_int_distribution<T>,
+                                      std::uniform_real_distribution<T>>;
+    dist_t dist(min, max);
+    return dist(rng);
 }
 }  // namespace os
 }  // namespace tsd

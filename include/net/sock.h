@@ -1,12 +1,17 @@
 #pragma once
 
+#include <limits>
 #include <memory>
 #include <mutex>
 
 #include "defs.h"
 #if defined(OS_WINDOWS)
-    #include <winsock.h>
+    #include <WinSock2.h>
+    #undef min
+    #undef max
 #endif  // OS_WINDOWS
+
+#include "os/util.h"
 
 namespace tsd {
 namespace net {
@@ -26,15 +31,20 @@ class WinSock {
 
    private:
     static std::mutex m_mutex;
-    WSADATA m_wsaData;
+    WSADATA m_wsa_data;
 };
 #endif  // OS_WINDOWS
 
 class Socket {
-    virtual ~Socket() {}
+   public:
+    Socket()
+        : m_id(os::random<uint32_t>(std::numeric_limits<uint32_t>::min(),
+                                    std::numeric_limits<uint32_t>::max())) {}
 
-    virtual void poll() = 0;
-    virtual void shutdown() = 0;
+   protected:
+    const uint32_t m_id;
+    // virtual void poll() = 0;
+    // virtual void shutdown() = 0;
 };
 }  // namespace net
 }  // namespace tsd
