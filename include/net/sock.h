@@ -37,14 +37,18 @@ class WinSock {
 
 class Socket {
    public:
-    Socket()
+    Socket(const uint16_t& port = 8080)
         : m_id(os::random<uint32_t>(std::numeric_limits<uint32_t>::min(),
-                                    std::numeric_limits<uint32_t>::max())) {}
+                                    std::numeric_limits<uint32_t>::max())),
+          m_done(false),
+          m_port(port) {}
 
    protected:
     const uint32_t m_id;
-    // virtual void poll() = 0;
-    // virtual void shutdown() = 0;
+    bool m_done;
+    uint16_t m_port;
+    virtual void start() = 0;
+    virtual void shutdown() = 0;
 };
 }  // namespace net
 }  // namespace tsd

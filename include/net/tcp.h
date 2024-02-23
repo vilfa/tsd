@@ -15,10 +15,14 @@ class TCPSocket : public Socket {
     TCPSocket(const uint16_t& port = 8080);
     ~TCPSocket();
 
+    void start() override;
+    void shutdown() override;
+
    private:
-    uint16_t m_port;
+#if defined(OS_WINDOWS)
     struct addrinfo* m_addr_info;
     SOCKET m_socket;
+#endif
 };
 }  // namespace net
 }  // namespace tsd

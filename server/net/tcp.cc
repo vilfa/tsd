@@ -14,7 +14,7 @@ using namespace tsd::net;
 
 TCPSocket::TCPSocket(const uint16_t& port /*= 8080*/)
 #if defined(OS_WINDOWS)
-    : m_addr_info(), m_socket(INVALID_SOCKET), m_port(port) {
+    : Socket(port), m_addr_info(nullptr), m_socket(INVALID_SOCKET) {
     struct addrinfo addr_hint = {0};
     addr_hint.ai_family = AF_INET;
     addr_hint.ai_socktype = SOCK_STREAM;
@@ -23,17 +23,40 @@ TCPSocket::TCPSocket(const uint16_t& port /*= 8080*/)
     if (int e_ = getaddrinfo(NULL, std::to_string(port).c_str(), &addr_hint,
                              &m_addr_info)) {
         spdlog::error("failed to init tcp socket: {}", os::error());
-        exit(e_);
+        std::exit(e_);
     }
     m_socket = socket(addr_hint.ai_family, addr_hint.ai_socktype,
                       addr_hint.ai_protocol);
     if (m_socket == INVALID_SOCKET) {
         spdlog::error("failed to init tcp socket: {}", os::error());
-        exit(1);
+        std::exit(1);
     }
     spdlog::debug("initialized tcp socket: {}", m_id);
 #elif defined(OS_UNIX)
 #endif
 }
 
-TCPSocket::~TCPSocket() {}
+TCPSocket::~TCPSocket() { shutdown(); }
+
+void TCPSocket::start() {
+    if (m_done) {
+        spdlog::error("cannot start closed socket: {}", m_id);
+        std::exit(1);
+    }
+    if (bind(m_socket, m_addr_info->ai_addr, (int)m_addr_info->ai_addrlen) ==
+        SOCKET_ERROR) {
+        m_done = true;
+        closesocket(m_socket);
+        spdlog::error("error starting socket: {}, {}", m_id, os::error());
+    }
+    spdlog::debug("started tcp socket: {}", m_id);
+}
+
+void TCPSocket::shutdown() {
+    if (m_done) {
+    
+    }
+    m_done = true;
+    closesocket(m_socket);
+    spdlog::info("shutdown tcp socket: {}", m_id);
+}

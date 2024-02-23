@@ -12,6 +12,7 @@ int main(int argc, char** argv) {
 
     const tsd::net::WinSock& winsock = tsd::net::WinSock::instance();
     tsd::net::TCPSocket sock;
+    sock.start();
 
     spdlog::info("{} is exiting [{}/{}]", tsd::os::process(),
                  tsd::os::hostname(), tsd::os::pid());
